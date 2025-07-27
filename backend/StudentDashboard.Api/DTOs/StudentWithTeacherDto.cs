@@ -1,17 +1,12 @@
-using System.ComponentModel.DataAnnotations;
-
 namespace StudentDashboard.Api.DTOs
 {
-    public class CreateStudentDto
+    public class StudentWithTeacherDto
     {
-        [Required]
+        public int Id { get; set; }
         public string? FullName { get; set; }
-
-        [Required]
-        [Phone]
         public string? ContactNumber { get; set; }
-
-        [Required]
         public string? Grade { get; set; }
+        public string? CreatedByEmail { get; set; }
+        public DateTime CreatedAt { get; set; }
     }
 }

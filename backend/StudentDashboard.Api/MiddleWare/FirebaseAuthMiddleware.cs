@@ -41,6 +41,13 @@ namespace StudentDashboard.Api.Middleware
                 {
                     claims.Add(new Claim(ClaimTypes.Role, role));
                 }
+                
+                
+                if (decodedToken.Claims.TryGetValue("email", out object? emailValue) && emailValue is string email)
+                {
+                    claims.Add(new Claim(ClaimTypes.Email, email));
+                }
+
 
                 var identity = new ClaimsIdentity(claims, "Firebase");
                 var principal = new ClaimsPrincipal(identity);

@@ -4,8 +4,13 @@ namespace StudentDashboard.Api.Models
     {
         public int Id { get; set; }
         public string? FullName { get; set; }
-        public string? Email { get; set; }
+        public string? ContactNumber { get; set;}
         public string? Grade { get; set; }
-        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;  // When student was added
+        public string? CreatedBy { get; set; } 
+        public string? CreatedByEmail { get; set; } 
+        public List<StudentWorksheet> StudentWorksheets { get; set; } = new();
+        public List<StudentTest> StudentTests { get; set; } = new();
+        public List<StudentProgress> Progress { get; set; } = new();
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;  
     }
 }

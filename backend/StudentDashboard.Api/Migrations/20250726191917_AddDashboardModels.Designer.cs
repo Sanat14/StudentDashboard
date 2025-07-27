@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using StudentDashboard.Api.Data;
@@ -11,9 +12,11 @@ using StudentDashboard.Api.Data;
 namespace StudentDashboard.Api.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250726191917_AddDashboardModels")]
+    partial class AddDashboardModels
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -35,12 +38,6 @@ namespace StudentDashboard.Api.Migrations
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("CreatedBy")
-                        .HasColumnType("text");
-
-                    b.Property<string>("CreatedByEmail")
-                        .HasColumnType("text");
 
                     b.Property<string>("FullName")
                         .HasColumnType("text");
@@ -80,7 +77,7 @@ namespace StudentDashboard.Api.Migrations
                     b.ToTable("StudentProgress");
                 });
 
-            modelBuilder.Entity("StudentDashboard.Api.Models.StudentTest", b =>
+            modelBuilder.Entity("StudentDashboard.Api.Models.Test", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -88,31 +85,35 @@ namespace StudentDashboard.Api.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<DateTime?>("DateTaken")
+                    b.Property<DateTime>("DateTaken")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<bool?>("Passed")
+                    b.Property<bool>("Passed")
                         .HasColumnType("boolean");
 
-                    b.Property<double?>("Score")
+                    b.Property<double>("Score")
                         .HasColumnType("double precision");
 
                     b.Property<int>("StudentId")
                         .HasColumnType("integer");
 
-                    b.Property<int>("TestTemplateId")
-                        .HasColumnType("integer");
+                    b.Property<string>("Subject")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Topic")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Type")
+                        .HasColumnType("text");
 
                     b.HasKey("Id");
 
                     b.HasIndex("StudentId");
 
-                    b.HasIndex("TestTemplateId");
-
-                    b.ToTable("StudentTests");
+                    b.ToTable("Tests");
                 });
 
-            modelBuilder.Entity("StudentDashboard.Api.Models.StudentWorksheet", b =>
+            modelBuilder.Entity("StudentDashboard.Api.Models.Worksheet", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -123,69 +124,29 @@ namespace StudentDashboard.Api.Migrations
                     b.Property<DateTime>("AssignedDate")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<string>("Difficulty")
+                        .HasColumnType("text");
+
                     b.Property<int>("StudentId")
                         .HasColumnType("integer");
+
+                    b.Property<string>("Subject")
+                        .HasColumnType("text");
 
                     b.Property<DateTime?>("SubmittedDate")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<int>("WorksheetTemplateId")
-                        .HasColumnType("integer");
+                    b.Property<string>("Title")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Topic")
+                        .HasColumnType("text");
 
                     b.HasKey("Id");
 
                     b.HasIndex("StudentId");
 
-                    b.HasIndex("WorksheetTemplateId");
-
-                    b.ToTable("StudentWorksheets");
-                });
-
-            modelBuilder.Entity("StudentDashboard.Api.Models.TestTemplate", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("Subject")
-                        .HasColumnType("text");
-
-                    b.Property<string>("Title")
-                        .HasColumnType("text");
-
-                    b.Property<string>("Topic")
-                        .HasColumnType("text");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("TestTemplates");
-                });
-
-            modelBuilder.Entity("StudentDashboard.Api.Models.WorksheetTemplate", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("Difficulty")
-                        .HasColumnType("text");
-
-                    b.Property<string>("Subject")
-                        .HasColumnType("text");
-
-                    b.Property<string>("Title")
-                        .HasColumnType("text");
-
-                    b.Property<string>("Topic")
-                        .HasColumnType("text");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("WorksheetTemplates");
+                    b.ToTable("Worksheets");
                 });
 
             modelBuilder.Entity("StudentDashboard.Api.Models.StudentProgress", b =>
@@ -199,61 +160,35 @@ namespace StudentDashboard.Api.Migrations
                     b.Navigation("Student");
                 });
 
-            modelBuilder.Entity("StudentDashboard.Api.Models.StudentTest", b =>
+            modelBuilder.Entity("StudentDashboard.Api.Models.Test", b =>
                 {
                     b.HasOne("StudentDashboard.Api.Models.Student", "Student")
-                        .WithMany("StudentTests")
+                        .WithMany("Tests")
                         .HasForeignKey("StudentId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("StudentDashboard.Api.Models.TestTemplate", "Template")
-                        .WithMany("AssignedTests")
-                        .HasForeignKey("TestTemplateId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.Navigation("Student");
-
-                    b.Navigation("Template");
                 });
 
-            modelBuilder.Entity("StudentDashboard.Api.Models.StudentWorksheet", b =>
+            modelBuilder.Entity("StudentDashboard.Api.Models.Worksheet", b =>
                 {
                     b.HasOne("StudentDashboard.Api.Models.Student", "Student")
-                        .WithMany("StudentWorksheets")
+                        .WithMany("Worksheets")
                         .HasForeignKey("StudentId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("StudentDashboard.Api.Models.WorksheetTemplate", "Template")
-                        .WithMany("AssignedWorksheets")
-                        .HasForeignKey("WorksheetTemplateId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.Navigation("Student");
-
-                    b.Navigation("Template");
                 });
 
             modelBuilder.Entity("StudentDashboard.Api.Models.Student", b =>
                 {
                     b.Navigation("Progress");
 
-                    b.Navigation("StudentTests");
+                    b.Navigation("Tests");
 
-                    b.Navigation("StudentWorksheets");
-                });
-
-            modelBuilder.Entity("StudentDashboard.Api.Models.TestTemplate", b =>
-                {
-                    b.Navigation("AssignedTests");
-                });
-
-            modelBuilder.Entity("StudentDashboard.Api.Models.WorksheetTemplate", b =>
-                {
-                    b.Navigation("AssignedWorksheets");
+                    b.Navigation("Worksheets");
                 });
 #pragma warning restore 612, 618
         }

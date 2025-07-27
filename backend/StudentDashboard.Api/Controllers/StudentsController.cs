@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using StudentDashboard.Api.Data;
 using StudentDashboard.Api.Models;
 using StudentDashboard.Api.DTOs;
+using System.Security.Claims;
 
 namespace StudentDashboard.Api.Controllers
 {
@@ -18,9 +19,22 @@ namespace StudentDashboard.Api.Controllers
 
         // GET: /api/students
         [HttpGet]
-        public ActionResult<IEnumerable<Student>> GetStudents()
+        public ActionResult<IEnumerable<StudentWithTeacherDto>> GetStudents()
         {
-            return Ok(_context.Students.ToList());
+            var students = _context.Students
+                .Select(s => new StudentWithTeacherDto
+                {
+                    Id = s.Id,
+                    FullName = s.FullName,
+                    ContactNumber = s.ContactNumber,
+                    Grade = s.Grade,
+                    CreatedByEmail = s.CreatedByEmail,
+                    CreatedAt = s.CreatedAt
+                })
+                .OrderBy(s => s.CreatedByEmail) 
+                .ToList();
+
+            return Ok(students);
         }
 
         // POST: /api/students
@@ -30,12 +44,21 @@ namespace StudentDashboard.Api.Controllers
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
+            var uid = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            var email = User.FindFirst(ClaimTypes.Email)?.Value;
+            
+            if (string.IsNullOrEmpty(uid))
+            {
+                return Unauthorized("Missing Firebase UID.");
+            }
+            
             var student = new Student
             {
                 FullName = studentDto.FullName,
-                Email = studentDto.Email,
-                Grade = studentDto.Grade
-                // CreatedAt is auto-set
+                ContactNumber = studentDto.ContactNumber,
+                Grade = studentDto.Grade,
+                CreatedBy = uid,
+                CreatedByEmail = email,
             };
 
             _context.Students.Add(student);
