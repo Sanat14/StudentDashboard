@@ -61,12 +61,28 @@ namespace StudentDashboard.Api.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateSubmission(int id, StudentWorksheet updated)
         {
-            var existing = await _context.StudentWorksheets.FindAsync(id);
+            var existing = await _context.StudentWorksheets
+                .Include(sw => sw.Template)
+                .FirstOrDefaultAsync(sw => sw.Id == id);
+
             if (existing == null) return NotFound();
 
             existing.SubmittedDate = updated.SubmittedDate;
-            await _context.SaveChangesAsync();
 
+            if (updated.SubmittedDate != null)
+            {
+                var progressEntry = new StudentProgress
+                {
+                    StudentId = existing.StudentId,
+                    EventType = "Worksheet Submitted",
+                    Description = $"Submitted worksheet: {existing.Template?.Title ?? "Unknown"}",
+                    Timestamp = DateTime.UtcNow
+                };
+
+                _context.StudentProgress.Add(progressEntry);
+            }
+
+            await _context.SaveChangesAsync();
             return NoContent();
         }
     }

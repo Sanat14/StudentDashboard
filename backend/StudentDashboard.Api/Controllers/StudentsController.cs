@@ -3,6 +3,7 @@ using StudentDashboard.Api.Data;
 using StudentDashboard.Api.Models;
 using StudentDashboard.Api.DTOs;
 using System.Security.Claims;
+using Microsoft.EntityFrameworkCore;
 
 namespace StudentDashboard.Api.Controllers
 {
@@ -35,6 +36,54 @@ namespace StudentDashboard.Api.Controllers
                 .ToList();
 
             return Ok(students);
+        }
+
+        // GET: /api/students/{id}/summary
+        [HttpGet("{id}/summary")]
+        public async Task<ActionResult<StudentSummaryDto?>> GetStudentSummary(int id)
+        {
+            var studentExists = await _context.Students.AnyAsync(s => s.Id == id);
+            if (!studentExists)
+                return NotFound($"No student found with ID {id}.");
+            
+            var studentName = await _context.Students
+                .Where(s => s.Id == id)
+                .Select(s => s.FullName)
+                .FirstOrDefaultAsync();
+
+            if (studentName == null)
+                return NotFound($"No student found with ID {id}.");
+
+            var totalWorksheetsAssigned = await _context.StudentWorksheets
+                .CountAsync(w => w.StudentId == id);
+
+            var totalWorksheetsSubmitted = await _context.StudentWorksheets
+                .CountAsync(w => w.StudentId == id && w.SubmittedDate != null);
+
+            var tests = await _context.StudentTests
+                .Where(t => t.StudentId == id && t.DateTaken != null)
+                .ToListAsync();
+
+            var totalTestsTaken = tests.Count;
+            var averageTestScore = tests.Any() ? tests.Average(t => t.Score) : 0.0;
+
+            var mostRecentActivity = await _context.StudentProgress
+                .Where(p => p.StudentId == id)
+                .OrderByDescending(p => p.Timestamp)
+                .FirstOrDefaultAsync();
+
+            var summary = new StudentSummaryDto
+            {
+                StudentName = studentName,
+                TotalWorksheetsAssigned = totalWorksheetsAssigned,
+                TotalWorksheetsSubmitted = totalWorksheetsSubmitted,
+                TotalTestsTaken = totalTestsTaken,
+                AverageTestScore = Math.Round(averageTestScore ?? 0.0, 2),
+                MostRecentActivityDescription = mostRecentActivity?.Description,
+                MostRecentActivityTimestamp = mostRecentActivity?.Timestamp
+            };
+
+            return Ok(summary);
         }
 
         // POST: /api/students

@@ -40,7 +40,7 @@ namespace StudentDashboard.Api.Controllers
                     Topic = st.Template.Topic,
                     Score = st.Score,
                     Passed = st.Passed,
-                    DateTaken = (DateTime)st.DateTaken
+                    DateTaken = st.DateTaken ?? default
                 })
                 .ToListAsync();
 
@@ -64,12 +64,28 @@ namespace StudentDashboard.Api.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateTestResult(int id, StudentTest updated)
         {
-            var existing = await _context.StudentTests.FindAsync(id);
+            var existing = await _context.StudentTests
+                .Include(st => st.Template)
+                .FirstOrDefaultAsync(st => st.Id == id);
+
             if (existing == null) return NotFound();
 
             existing.Score = updated.Score;
             existing.Passed = updated.Passed;
             existing.DateTaken = updated.DateTaken;
+
+            if (updated.DateTaken != null)
+            {
+                var progressEntry = new StudentProgress
+                {
+                    StudentId = existing.StudentId,
+                    EventType = "Test Completed",
+                    Description = $"Completed test: {existing.Template?.Title ?? "Unknown"}",
+                    Timestamp = DateTime.UtcNow
+                };
+
+                _context.StudentProgress.Add(progressEntry);
+            }
 
             await _context.SaveChangesAsync();
             return NoContent();
