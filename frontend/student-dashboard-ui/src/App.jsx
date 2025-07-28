@@ -1,61 +1,33 @@
-import { useState, useEffect } from "react";
-import { fetchWithAuth } from "./utils/fetchWithAuth";
-import LoginForm from "./Components/LoginForm";
+"use client"
+
+import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom"
+import { useState, useEffect } from "react"
+import ModernLoginForm from "./Components/Auth/LoginForm"
+import ModernDashboard from "./Components/Dashboard/ModernDashboard"
 
 function App() {
-  const [idToken, setIdToken] = useState(() => {
-    // Restore token from localStorage if available
-    return localStorage.getItem("idToken");
-  });
-  const [students, setStudents] = useState([]);
+  const [idToken, setIdToken] = useState(() => localStorage.getItem("idToken"))
 
   useEffect(() => {
     if (idToken) {
-      localStorage.setItem("idToken", idToken); // Save to localStorage
+      localStorage.setItem("idToken", idToken)
     } else {
-      localStorage.removeItem("idToken");
+      localStorage.removeItem("idToken")
     }
-  }, [idToken]);
-
-  useEffect(() => {
-    const fetchStudents = async () => {
-      try {
-        const res = await fetchWithAuth("http://localhost:5265/api/students", idToken);
-        const data = await res.json();
-        setStudents(data);
-      } catch (err) {
-        console.error("Failed to fetch students:", err);
-      }
-    };
-
-    if (idToken) {
-      fetchStudents();
-    }
-  }, [idToken]);
-
-  const handleLogout = () => {
-    setIdToken(null);
-    localStorage.removeItem("idToken");
-  };
+  }, [idToken])
 
   return (
-    <div>
+    <Router>
       {!idToken ? (
-        <LoginForm onLogin={(token) => setIdToken(token)} />
+        <ModernLoginForm onLogin={(token) => setIdToken(token)} />
       ) : (
-        <div>
-          <h1>Welcome, Teacher!</h1>
-          <button onClick={handleLogout}>Log Out</button>
-          <h2>Student List</h2>
-          <ul>
-            {students.map((s) => (
-              <li key={s.id}>{s.fullName}</li>
-            ))}
-          </ul>
-        </div>
+        <Routes>
+          <Route path="/*" element={<ModernDashboard idToken={idToken} onLogout={() => setIdToken(null)} />} />
+          <Route path="*" element={<Navigate to="/" />} />
+        </Routes>
       )}
-    </div>
-  );
+    </Router>
+  )
 }
 
-export default App;
+export default App
