@@ -2,6 +2,7 @@ namespace StudentDashboard.Api.DTOs
 {
     public class StudentTestDto
     {
+        public int Id { get; set; }
         public string? StudentName { get; set; }
         public string? TestTitle { get; set; }
         public string? Subject { get; set; }

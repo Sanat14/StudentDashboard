@@ -32,10 +32,33 @@ namespace StudentDashboard.Api.Controllers
                     CreatedByEmail = s.CreatedByEmail,
                     CreatedAt = s.CreatedAt
                 })
-                .OrderBy(s => s.CreatedByEmail) 
+                .OrderBy(s => s.CreatedByEmail)
                 .ToList();
 
             return Ok(students);
+        }
+
+        // GET: /api/students/{id}
+        [HttpGet("{id}")]
+        public async Task<ActionResult<StudentWithTeacherDto>> GetStudentById(int id)
+        {
+            var student = await _context.Students
+                .Where(s => s.Id == id)
+                .Select(s => new StudentWithTeacherDto
+                {
+                    Id = s.Id,
+                    FullName = s.FullName,
+                    ContactNumber = s.ContactNumber,
+                    Grade = s.Grade,
+                    CreatedByEmail = s.CreatedByEmail,
+                    CreatedAt = s.CreatedAt
+                })
+                .FirstOrDefaultAsync();
+
+            if (student == null)
+                return NotFound();
+
+            return Ok(student);
         }
 
         // GET: /api/students/{id}/summary
@@ -45,7 +68,7 @@ namespace StudentDashboard.Api.Controllers
             var studentExists = await _context.Students.AnyAsync(s => s.Id == id);
             if (!studentExists)
                 return NotFound($"No student found with ID {id}.");
-            
+
             var studentName = await _context.Students
                 .Where(s => s.Id == id)
                 .Select(s => s.FullName)
@@ -83,6 +106,7 @@ namespace StudentDashboard.Api.Controllers
                 MostRecentActivityTimestamp = mostRecentActivity?.Timestamp
             };
 
+            Console.WriteLine(System.Text.Json.JsonSerializer.Serialize(summary));
             return Ok(summary);
         }
 
@@ -95,12 +119,12 @@ namespace StudentDashboard.Api.Controllers
 
             var uid = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             var email = User.FindFirst(ClaimTypes.Email)?.Value;
-            
+
             if (string.IsNullOrEmpty(uid))
             {
                 return Unauthorized("Missing Firebase UID.");
             }
-            
+
             var student = new Student
             {
                 FullName = studentDto.FullName,
@@ -114,6 +138,41 @@ namespace StudentDashboard.Api.Controllers
             _context.SaveChanges();
 
             return CreatedAtAction(nameof(GetStudents), new { id = student.Id }, student);
+        }
+
+        // PUT: /api/students/{id}
+        [HttpPut("{id}")]
+        public async Task<IActionResult> UpdateStudent(int id, UpdateStudentDto dto)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            var student = await _context.Students.FindAsync(id);
+            if (student == null)
+                return NotFound($"No student found with ID {id}.");
+
+            student.FullName = dto.FullName;
+            student.ContactNumber = dto.ContactNumber;
+            student.Grade = dto.Grade;
+
+            _context.Students.Update(student);
+            await _context.SaveChangesAsync();
+
+            return NoContent(); // 204
+        }
+        
+        // DELETE: /api/students/{id}
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeleteStudent(int id)
+        {
+            var student = await _context.Students.FindAsync(id);
+            if (student == null)
+                return NotFound($"No student found with ID {id}.");
+
+            _context.Students.Remove(student);
+            await _context.SaveChangesAsync();
+
+            return NoContent(); // 204
         }
     }
 }

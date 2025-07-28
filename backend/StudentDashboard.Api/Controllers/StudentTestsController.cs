@@ -34,26 +34,46 @@ namespace StudentDashboard.Api.Controllers
             var results = await query
                 .Select(st => new StudentTestDto
                 {
+                    Id = st.Id,
                     StudentName = st.Student!.FullName,
                     TestTitle = st.Template!.Title,
                     Subject = st.Template.Subject,
                     Topic = st.Template.Topic,
                     Score = st.Score,
                     Passed = st.Passed,
-                    DateTaken = st.DateTaken ?? default
+                    DateTaken = st.DateTaken
                 })
                 .ToListAsync();
 
             return results;
         }
 
+        // GET: /api/studenttests/{id}
+        [HttpGet("{id}")]
+        public async Task<ActionResult<StudentTest>> GetById(int id)
+        {
+            var test = await _context.StudentTests
+                .Include(t => t.Student)
+                .Include(t => t.Template)
+                .FirstOrDefaultAsync(t => t.Id == id);
+
+            if (test == null)
+                return NotFound();
+
+            return Ok(test);
+        }
+
         // POST: /api/studenttests
         [HttpPost]
-        public async Task<ActionResult<StudentTest>> AssignTest([FromBody] StudentTest test)
+        public async Task<ActionResult<StudentTest>> AssignTest([FromBody] StudentTestCreateDto dto)
         {
-            
-            Console.WriteLine(">>> POST /api/studenttests hit!");
-            Console.WriteLine($"TestTemplateId: {test.TestTemplateId}, StudentId: {test.StudentId}");
+            var test = new StudentTest
+            {
+                StudentId = dto.StudentId,
+                TestTemplateId = dto.TestTemplateId,
+                AssignedDate = dto.AssignedDate
+            };
+
             _context.StudentTests.Add(test);
             await _context.SaveChangesAsync();
 
@@ -62,7 +82,7 @@ namespace StudentDashboard.Api.Controllers
 
         // PUT: /api/studenttests/{id}
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateTestResult(int id, StudentTest updated)
+        public async Task<IActionResult> UpdateTestResult(int id, StudentTestUpdateDto updated)
         {
             var existing = await _context.StudentTests
                 .Include(st => st.Template)
@@ -90,5 +110,20 @@ namespace StudentDashboard.Api.Controllers
             await _context.SaveChangesAsync();
             return NoContent();
         }
+
+        // DELETE: /api/studenttests/{id}
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> Delete(int id)
+        {
+            var test = await _context.StudentTests.FindAsync(id);
+            if (test == null)
+                return NotFound();
+
+            _context.StudentTests.Remove(test);
+            await _context.SaveChangesAsync();
+
+            return NoContent();
+        }
+
     }
 }

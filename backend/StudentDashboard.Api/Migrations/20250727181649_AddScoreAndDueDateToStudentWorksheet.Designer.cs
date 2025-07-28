@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using StudentDashboard.Api.Data;
@@ -11,9 +12,11 @@ using StudentDashboard.Api.Data;
 namespace StudentDashboard.Api.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250727181649_AddScoreAndDueDateToStudentWorksheet")]
+    partial class AddScoreAndDueDateToStudentWorksheet
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -62,11 +65,9 @@ namespace StudentDashboard.Api.Migrations
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<string>("Description")
-                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<string>("EventType")
-                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<int>("StudentId")
@@ -89,9 +90,6 @@ namespace StudentDashboard.Api.Migrations
                         .HasColumnType("integer");
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<DateTime>("AssignedDate")
-                        .HasColumnType("timestamp with time zone");
 
                     b.Property<DateTime?>("DateTaken")
                         .HasColumnType("timestamp with time zone");

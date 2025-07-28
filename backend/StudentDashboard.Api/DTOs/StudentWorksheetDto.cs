@@ -1,12 +1,12 @@
-namespace StudentDashboard.Api.DTOs
+public class StudentWorksheetDto
 {
-    public class StudentWorksheetDto
-    {
-        public string? StudentName { get; set; }
-        public string? WorksheetTitle { get; set; }
-        public string? Topic { get; set; }
-        public string? Subject { get; set; }
-        public DateTime AssignedDate { get; set; }
-        public DateTime? SubmittedDate { get; set; }
-    }
+    public int Id { get; set; }
+    public string StudentName { get; set; } = string.Empty;
+    public string WorksheetTitle { get; set; } = string.Empty;
+    public string Topic { get; set; } = string.Empty;
+    public string Subject { get; set; } = string.Empty;
+    public DateTime AssignedDate { get; set; }
+    public DateTime? SubmittedDate { get; set; }
+    public double? Score { get; set; }
+    public DateTime? DueDate { get; set; }
 }

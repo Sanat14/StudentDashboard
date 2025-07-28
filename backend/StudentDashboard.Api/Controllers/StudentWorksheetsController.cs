@@ -31,45 +31,88 @@ namespace StudentDashboard.Api.Controllers
                 query = query.Where(sw => sw.StudentId == studentId.Value);
             }
 
-            var results = await query
-                .Select(sw => new StudentWorksheetDto
-                {
-                    StudentName = sw.Student!.FullName,
-                    WorksheetTitle = sw.Template!.Title,
-                    Topic = sw.Template.Topic,
-                    Subject = sw.Template.Subject,
-                    AssignedDate = sw.AssignedDate,
-                    SubmittedDate = sw.SubmittedDate
-                })
-                .ToListAsync();
+            var data = await query.ToListAsync(); // Fetch to memory
+
+            var results = data.Select(sw => new StudentWorksheetDto
+            {
+                Id = sw.Id,
+                StudentName = sw.Student?.FullName ?? "Unknown",
+                WorksheetTitle = sw.Template?.Title ?? "Untitled",
+                Topic = sw.Template?.Topic ?? "N/A",
+                Subject = sw.Template?.Subject ?? "N/A",
+                AssignedDate = sw.AssignedDate,
+                SubmittedDate = sw.SubmittedDate,
+                Score = sw.Score,
+                DueDate = sw.DueDate
+            }).ToList();
 
             return Ok(results);
         }
 
+
+        // GET: /api/studentworksheets/{id}
+        [HttpGet("{id}")]
+        public async Task<ActionResult<StudentWorksheetDto>> GetById(int id)
+        {
+            var sw = await _context.StudentWorksheets
+                .Include(sw => sw.Template)
+                .Include(sw => sw.Student)
+                .FirstOrDefaultAsync(sw => sw.Id == id);
+
+            if (sw == null)
+                return NotFound();
+
+            var dto = new StudentWorksheetDto
+            {
+                Id = sw.Id,
+                StudentName = sw.Student?.FullName ?? "Unknown",
+                WorksheetTitle = sw.Template?.Title ?? "Untitled",
+                Topic = sw.Template?.Topic ?? "N/A",
+                Subject = sw.Template?.Subject ?? "N/A",
+                AssignedDate = sw.AssignedDate,
+                SubmittedDate = sw.SubmittedDate,
+                Score = sw.Score,
+                DueDate = sw.DueDate
+            };
+
+            return Ok(dto);
+        }
+
+
         // POST: /api/studentworksheets
         [HttpPost]
-        public async Task<ActionResult<StudentWorksheet>> AssignWorksheet(StudentWorksheet assignment)
+        public async Task<ActionResult<StudentWorksheet>> AssignWorksheet(StudentWorksheetCreateDto dto)
         {
+            var assignment = new StudentWorksheet
+            {
+                StudentId = dto.StudentId,
+                WorksheetTemplateId = dto.WorksheetTemplateId,
+                AssignedDate = DateTime.UtcNow,
+                DueDate = dto.DueDate
+            };
+
             _context.StudentWorksheets.Add(assignment);
-            assignment.AssignedDate = DateTime.SpecifyKind(assignment.AssignedDate, DateTimeKind.Utc);
             await _context.SaveChangesAsync();
 
-            return CreatedAtAction(nameof(GetAssignedWorksheets), new { id = assignment.Id }, assignment);
+            return CreatedAtAction(nameof(GetAssignedWorksheets), new { studentId = dto.StudentId }, assignment);
         }
 
         // PUT: /api/studentworksheets/{id}
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateSubmission(int id, StudentWorksheet updated)
+        public async Task<IActionResult> UpdateSubmission(int id, StudentWorksheetUpdateDto dto)
         {
             var existing = await _context.StudentWorksheets
                 .Include(sw => sw.Template)
                 .FirstOrDefaultAsync(sw => sw.Id == id);
 
-            if (existing == null) return NotFound();
+            if (existing == null)
+                return NotFound();
 
-            existing.SubmittedDate = updated.SubmittedDate;
+            existing.SubmittedDate = dto.SubmittedDate;
+            existing.Score = dto.Score;
+            existing.DueDate = dto.DueDate;
 
-            if (updated.SubmittedDate != null)
+            if (dto.SubmittedDate != null)
             {
                 var progressEntry = new StudentProgress
                 {
@@ -83,6 +126,20 @@ namespace StudentDashboard.Api.Controllers
             }
 
             await _context.SaveChangesAsync();
+            return NoContent();
+        }
+
+        // DELETE: /api/studentworksheets/{id}
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeleteAssignment(int id)
+        {
+            var assignment = await _context.StudentWorksheets.FindAsync(id);
+            if (assignment == null)
+                return NotFound();
+
+            _context.StudentWorksheets.Remove(assignment);
+            await _context.SaveChangesAsync();
+
             return NoContent();
         }
     }

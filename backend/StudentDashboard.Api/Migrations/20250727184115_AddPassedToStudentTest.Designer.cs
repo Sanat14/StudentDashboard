@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using StudentDashboard.Api.Data;
@@ -11,9 +12,11 @@ using StudentDashboard.Api.Data;
 namespace StudentDashboard.Api.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250727184115_AddPassedToStudentTest")]
+    partial class AddPassedToStudentTest
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -72,12 +75,17 @@ namespace StudentDashboard.Api.Migrations
                     b.Property<int>("StudentId")
                         .HasColumnType("integer");
 
+                    b.Property<int?>("StudentId1")
+                        .HasColumnType("integer");
+
                     b.Property<DateTime>("Timestamp")
                         .HasColumnType("timestamp with time zone");
 
                     b.HasKey("Id");
 
                     b.HasIndex("StudentId");
+
+                    b.HasIndex("StudentId1");
 
                     b.ToTable("StudentProgress");
                 });
@@ -105,14 +113,24 @@ namespace StudentDashboard.Api.Migrations
                     b.Property<int>("StudentId")
                         .HasColumnType("integer");
 
+                    b.Property<int?>("StudentId1")
+                        .HasColumnType("integer");
+
                     b.Property<int>("TestTemplateId")
+                        .HasColumnType("integer");
+
+                    b.Property<int?>("TestTemplateId1")
                         .HasColumnType("integer");
 
                     b.HasKey("Id");
 
                     b.HasIndex("StudentId");
 
+                    b.HasIndex("StudentId1");
+
                     b.HasIndex("TestTemplateId");
+
+                    b.HasIndex("TestTemplateId1");
 
                     b.ToTable("StudentTests");
                 });
@@ -137,17 +155,27 @@ namespace StudentDashboard.Api.Migrations
                     b.Property<int>("StudentId")
                         .HasColumnType("integer");
 
+                    b.Property<int?>("StudentId1")
+                        .HasColumnType("integer");
+
                     b.Property<DateTime?>("SubmittedDate")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<int>("WorksheetTemplateId")
                         .HasColumnType("integer");
 
+                    b.Property<int?>("WorksheetTemplateId1")
+                        .HasColumnType("integer");
+
                     b.HasKey("Id");
 
                     b.HasIndex("StudentId");
 
+                    b.HasIndex("StudentId1");
+
                     b.HasIndex("WorksheetTemplateId");
+
+                    b.HasIndex("WorksheetTemplateId1");
 
                     b.ToTable("StudentWorksheets");
                 });
@@ -202,10 +230,14 @@ namespace StudentDashboard.Api.Migrations
             modelBuilder.Entity("StudentDashboard.Api.Models.StudentProgress", b =>
                 {
                     b.HasOne("StudentDashboard.Api.Models.Student", "Student")
-                        .WithMany("Progress")
+                        .WithMany()
                         .HasForeignKey("StudentId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.HasOne("StudentDashboard.Api.Models.Student", null)
+                        .WithMany("Progress")
+                        .HasForeignKey("StudentId1");
 
                     b.Navigation("Student");
                 });
@@ -213,16 +245,24 @@ namespace StudentDashboard.Api.Migrations
             modelBuilder.Entity("StudentDashboard.Api.Models.StudentTest", b =>
                 {
                     b.HasOne("StudentDashboard.Api.Models.Student", "Student")
-                        .WithMany("StudentTests")
+                        .WithMany()
                         .HasForeignKey("StudentId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("StudentDashboard.Api.Models.Student", null)
+                        .WithMany("StudentTests")
+                        .HasForeignKey("StudentId1");
+
                     b.HasOne("StudentDashboard.Api.Models.TestTemplate", "Template")
-                        .WithMany("AssignedTests")
+                        .WithMany()
                         .HasForeignKey("TestTemplateId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.HasOne("StudentDashboard.Api.Models.TestTemplate", null)
+                        .WithMany("AssignedTests")
+                        .HasForeignKey("TestTemplateId1");
 
                     b.Navigation("Student");
 
@@ -232,16 +272,24 @@ namespace StudentDashboard.Api.Migrations
             modelBuilder.Entity("StudentDashboard.Api.Models.StudentWorksheet", b =>
                 {
                     b.HasOne("StudentDashboard.Api.Models.Student", "Student")
-                        .WithMany("StudentWorksheets")
+                        .WithMany()
                         .HasForeignKey("StudentId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("StudentDashboard.Api.Models.Student", null)
+                        .WithMany("StudentWorksheets")
+                        .HasForeignKey("StudentId1");
+
                     b.HasOne("StudentDashboard.Api.Models.WorksheetTemplate", "Template")
-                        .WithMany("AssignedWorksheets")
+                        .WithMany()
                         .HasForeignKey("WorksheetTemplateId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.HasOne("StudentDashboard.Api.Models.WorksheetTemplate", null)
+                        .WithMany("AssignedWorksheets")
+                        .HasForeignKey("WorksheetTemplateId1");
 
                     b.Navigation("Student");
 
