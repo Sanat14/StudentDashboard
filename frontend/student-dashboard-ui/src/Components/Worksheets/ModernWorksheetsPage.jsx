@@ -18,6 +18,10 @@ export default function ModernWorksheetsPage({ idToken }) {
   const [showTemplateModal, setShowTemplateModal] = useState(false)
   const [selectedWorksheet, setSelectedWorksheet] = useState(null)
   const [selectedTemplate, setSelectedTemplate] = useState(null)
+  
+  // Template filter states
+  const [templateSubjectFilter, setTemplateSubjectFilter] = useState("All")
+  const [templateTopicFilter, setTemplateTopicFilter] = useState("")
 
   useEffect(() => {
     loadData()
@@ -92,8 +96,9 @@ export default function ModernWorksheetsPage({ idToken }) {
     }
   }
 
+  // Updated status logic: based on score instead of submitted date
   const getStatusIcon = (worksheet) => {
-    if (worksheet.submittedDate) {
+    if (worksheet.score !== null && worksheet.score !== undefined) {
       return <CheckCircle className="w-5 h-5 text-green-500" />
     } else if (worksheet.dueDate && new Date(worksheet.dueDate) < new Date()) {
       return <AlertCircle className="w-5 h-5 text-red-500" />
@@ -103,7 +108,7 @@ export default function ModernWorksheetsPage({ idToken }) {
   }
 
   const getStatusText = (worksheet) => {
-    if (worksheet.submittedDate) {
+    if (worksheet.score !== null && worksheet.score !== undefined) {
       return "Completed"
     } else if (worksheet.dueDate && new Date(worksheet.dueDate) < new Date()) {
       return "Overdue"
@@ -113,7 +118,7 @@ export default function ModernWorksheetsPage({ idToken }) {
   }
 
   const getStatusColor = (worksheet) => {
-    if (worksheet.submittedDate) {
+    if (worksheet.score !== null && worksheet.score !== undefined) {
       return "text-green-600 bg-green-100"
     } else if (worksheet.dueDate && new Date(worksheet.dueDate) < new Date()) {
       return "text-red-600 bg-red-100"
@@ -128,16 +133,27 @@ export default function ModernWorksheetsPage({ idToken }) {
       worksheet.studentName?.toLowerCase().includes(searchTerm.toLowerCase())
     const matchesFilter =
       filterBy === "All" ||
-      (filterBy === "Completed" && worksheet.submittedDate) ||
+      (filterBy === "Completed" && worksheet.score !== null && worksheet.score !== undefined) ||
       (filterBy === "Pending" &&
-        !worksheet.submittedDate &&
+        (worksheet.score === null || worksheet.score === undefined) &&
         (!worksheet.dueDate || new Date(worksheet.dueDate) >= new Date())) ||
       (filterBy === "Overdue" &&
-        !worksheet.submittedDate &&
+        (worksheet.score === null || worksheet.score === undefined) &&
         worksheet.dueDate &&
         new Date(worksheet.dueDate) < new Date())
     return matchesSearch && matchesFilter
   })
+
+  // Filter templates by subject and topic
+  const filteredTemplates = templates.filter((template) => {
+    const matchesSubject = templateSubjectFilter === "All" || template.subject === templateSubjectFilter
+    const matchesTopic = !templateTopicFilter || template.topic?.toLowerCase().includes(templateTopicFilter.toLowerCase())
+    return matchesSubject && matchesTopic
+  })
+
+  // Get unique subjects and topics for filter options
+  const uniqueSubjects = [...new Set(templates.map(t => t.subject).filter(Boolean))]
+  const uniqueTopics = [...new Set(templates.map(t => t.topic).filter(Boolean))]
 
   if (loading) {
     return (
@@ -198,7 +214,7 @@ export default function ModernWorksheetsPage({ idToken }) {
               </div>
               <div>
                 <p className="text-sm text-gray-600">Completed</p>
-                <p className="text-2xl font-bold text-gray-900">{worksheets.filter((w) => w.submittedDate).length}</p>
+                <p className="text-2xl font-bold text-gray-900">{worksheets.filter((w) => w.score !== null && w.score !== undefined).length}</p>
               </div>
             </div>
           </div>
@@ -212,7 +228,7 @@ export default function ModernWorksheetsPage({ idToken }) {
                 <p className="text-sm text-gray-600">Pending</p>
                 <p className="text-2xl font-bold text-gray-900">
                   {
-                    worksheets.filter((w) => !w.submittedDate && (!w.dueDate || new Date(w.dueDate) >= new Date()))
+                    worksheets.filter((w) => (w.score === null || w.score === undefined) && (!w.dueDate || new Date(w.dueDate) >= new Date()))
                       .length
                   }
                 </p>
@@ -228,7 +244,7 @@ export default function ModernWorksheetsPage({ idToken }) {
               <div>
                 <p className="text-sm text-gray-600">Overdue</p>
                 <p className="text-2xl font-bold text-gray-900">
-                  {worksheets.filter((w) => !w.submittedDate && w.dueDate && new Date(w.dueDate) < new Date()).length}
+                  {worksheets.filter((w) => (w.score === null || w.score === undefined) && w.dueDate && new Date(w.dueDate) < new Date()).length}
                 </p>
               </div>
             </div>
@@ -241,7 +257,7 @@ export default function ModernWorksheetsPage({ idToken }) {
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
             <input
               type="text"
-              placeholder="Search worksheets or students..."
+              placeholder="Type in student name or worksheet title..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white text-gray-900"
@@ -265,7 +281,7 @@ export default function ModernWorksheetsPage({ idToken }) {
         {/* Worksheets Table */}
         <div className="bg-white rounded-xl shadow-sm border overflow-hidden">
           <div className="px-6 py-4 border-b border-gray-200">
-            <h2 className="text-lg font-semibold text-gray-900">All Worksheets</h2>
+            <h2 className="text-lg font-semibold text-gray-900">All Worksheets Assigned</h2>
           </div>
 
           <div className="overflow-x-auto">
@@ -376,6 +392,37 @@ export default function ModernWorksheetsPage({ idToken }) {
             <h2 className="text-lg font-semibold text-gray-900">Worksheet Templates</h2>
           </div>
 
+          {/* Template Filters */}
+          <div className="px-6 py-4 border-b border-gray-200 bg-gray-50">
+            <div className="flex flex-col sm:flex-row gap-4">
+              <div className="relative flex-1">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+                <input
+                  type="text"
+                  placeholder="Search templates by topic..."
+                  value={templateTopicFilter}
+                  onChange={(e) => setTemplateTopicFilter(e.target.value)}
+                  className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white text-gray-900"
+                />
+              </div>
+              <div className="relative">
+                <Filter className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+                <select
+                  value={templateSubjectFilter}
+                  onChange={(e) => setTemplateSubjectFilter(e.target.value)}
+                  className="pl-10 pr-8 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent appearance-none bg-white text-gray-900 min-w-48"
+                >
+                  <option value="All">All Subjects</option>
+                  {uniqueSubjects.map((subject) => (
+                    <option key={subject} value={subject}>
+                      {subject}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+          </div>
+
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead className="bg-gray-50">
@@ -388,7 +435,7 @@ export default function ModernWorksheetsPage({ idToken }) {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200">
-                {templates.map((template) => (
+                {filteredTemplates.map((template) => (
                   <tr key={template.id} className="hover:bg-gray-50 transition-colors">
                     <td className="px-6 py-4">
                       <div className="flex items-center space-x-3">
@@ -448,7 +495,7 @@ export default function ModernWorksheetsPage({ idToken }) {
             </table>
           </div>
 
-          {templates.length === 0 && (
+          {filteredTemplates.length === 0 && (
             <div className="text-center py-12">
               <FileText className="w-12 h-12 text-gray-400 mx-auto mb-4" />
               <p className="text-gray-500">No templates found</p>
@@ -645,12 +692,11 @@ function AddWorksheetModal({ isOpen, onClose, onWorksheetAdded, templates, stude
   )
 }
 
-// Edit Worksheet Modal Component
+// Edit Worksheet Modal Component - Updated to remove due date field and change status logic
 function EditWorksheetModal({ isOpen, onClose, worksheet, onWorksheetUpdated, idToken }) {
   const [formData, setFormData] = useState({
     submittedDate: null,
     score: "",
-    dueDate: null,
   })
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
@@ -660,7 +706,6 @@ function EditWorksheetModal({ isOpen, onClose, worksheet, onWorksheetUpdated, id
       setFormData({
         submittedDate: worksheet.submittedDate ? new Date(worksheet.submittedDate) : null,
         score: worksheet.score?.toString() || "",
-        dueDate: worksheet.dueDate ? new Date(worksheet.dueDate) : null,
       })
     }
   }, [worksheet])
@@ -679,7 +724,6 @@ function EditWorksheetModal({ isOpen, onClose, worksheet, onWorksheetUpdated, id
         body: JSON.stringify({
           submittedDate: formData.submittedDate ? formData.submittedDate.toISOString() : null,
           score: formData.score ? parseFloat(formData.score) : null,
-          dueDate: formData.dueDate ? formData.dueDate.toISOString() : null,
         }),
       })
 
@@ -743,19 +787,7 @@ function EditWorksheetModal({ isOpen, onClose, worksheet, onWorksheetUpdated, id
               className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white text-gray-900"
               placeholder="Enter score (0-100)"
             />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Due Date</label>
-            <DatePicker
-              selected={formData.dueDate}
-              onChange={(date) => setFormData({ ...formData, dueDate: date })}
-              showTimeSelect
-              dateFormat="Pp"
-              className="w-full px-4 py-3 border border-gray-300 rounded-xl bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-              placeholderText="Select due date and time"
-              isClearable
-            />
+            <p className="text-sm text-gray-500 mt-1">Entering a score will mark the worksheet as completed</p>
           </div>
 
           <div className="flex space-x-3 pt-4">
@@ -780,7 +812,7 @@ function EditWorksheetModal({ isOpen, onClose, worksheet, onWorksheetUpdated, id
   )
 }
 
-// Worksheet Template Modal Component
+// Worksheet Template Modal Component - Updated to restrict subject to Math or English
 function WorksheetTemplateModal({ isOpen, onClose, template, onTemplateSaved, idToken }) {
   const [formData, setFormData] = useState({
     title: "",
@@ -877,14 +909,16 @@ function WorksheetTemplateModal({ isOpen, onClose, template, onTemplateSaved, id
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">Subject</label>
-            <input
-              type="text"
+            <select
               required
               value={formData.subject}
               onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
               className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white text-gray-900"
-              placeholder="Enter subject (e.g., Math, Science)"
-            />
+            >
+              <option value="" className="text-gray-900">Select subject</option>
+              <option value="Math" className="text-gray-900">Math</option>
+              <option value="English" className="text-gray-900">English</option>
+            </select>
           </div>
 
           <div>

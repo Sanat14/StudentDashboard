@@ -5,6 +5,7 @@ import ModernStudentDetailsPage from "../Students/ModernStudentDetailsPage"
 import ModernWorksheetsPage from "../Worksheets/ModernWorksheetsPage"
 import ModernTestsPage from "../Tests/ModernTestsPage"
 import ModernReportsPage from "../Reports/ModernReportsPage"
+import ModernProgressPage from "../Progress/ModernProgressPage"
 import ModernSidebar from "./ModernSidebar"
 
 export default function ModernDashboard({ idToken, onLogout }) {
@@ -19,6 +20,7 @@ export default function ModernDashboard({ idToken, onLogout }) {
           <Route path="/worksheets" element={<ModernWorksheetsPage idToken={idToken} />} />
           <Route path="/tests" element={<ModernTestsPage idToken={idToken} />} />
           <Route path="/reports" element={<ModernReportsPage idToken={idToken} />} />
+          <Route path="/progress" element={<ModernProgressPage idToken={idToken} />} />
         </Routes>
       </main>
     </div>

@@ -18,6 +18,10 @@ export default function ModernTestsPage({ idToken }) {
   const [showTemplateModal, setShowTemplateModal] = useState(false)
   const [selectedTest, setSelectedTest] = useState(null)
   const [selectedTemplate, setSelectedTemplate] = useState(null)
+  
+  // Template filter states
+  const [templateSubjectFilter, setTemplateSubjectFilter] = useState("All")
+  const [templateTopicFilter, setTemplateTopicFilter] = useState("")
 
   useEffect(() => {
     loadData()
@@ -141,6 +145,17 @@ export default function ModernTestsPage({ idToken }) {
       (filterBy === "Not Taken" && !isValidDate)
     return matchesSearch && matchesFilter
   })
+
+  // Filter templates by subject and topic
+  const filteredTemplates = templates.filter((template) => {
+    const matchesSubject = templateSubjectFilter === "All" || template.subject === templateSubjectFilter
+    const matchesTopic = !templateTopicFilter || template.topic?.toLowerCase().includes(templateTopicFilter.toLowerCase())
+    return matchesSubject && matchesTopic
+  })
+
+  // Get unique subjects and topics for filter options
+  const uniqueSubjects = [...new Set(templates.map(t => t.subject).filter(Boolean))]
+  const uniqueTopics = [...new Set(templates.map(t => t.topic).filter(Boolean))]
 
   if (loading) {
     return (
@@ -375,6 +390,37 @@ export default function ModernTestsPage({ idToken }) {
             <h2 className="text-lg font-semibold text-gray-900">Test Templates</h2>
           </div>
 
+          {/* Template Filters */}
+          <div className="px-6 py-4 border-b border-gray-200 bg-gray-50">
+            <div className="flex flex-col sm:flex-row gap-4">
+              <div className="relative flex-1">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+                <input
+                  type="text"
+                  placeholder="Search templates by topic..."
+                  value={templateTopicFilter}
+                  onChange={(e) => setTemplateTopicFilter(e.target.value)}
+                  className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white text-gray-900"
+                />
+              </div>
+              <div className="relative">
+                <Filter className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+                <select
+                  value={templateSubjectFilter}
+                  onChange={(e) => setTemplateSubjectFilter(e.target.value)}
+                  className="pl-10 pr-8 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent appearance-none bg-white text-gray-900 min-w-48"
+                >
+                  <option value="All">All Subjects</option>
+                  {uniqueSubjects.map((subject) => (
+                    <option key={subject} value={subject}>
+                      {subject}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+          </div>
+
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead className="bg-gray-50">
@@ -386,7 +432,7 @@ export default function ModernTestsPage({ idToken }) {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200">
-                {templates.map((template) => (
+                {filteredTemplates.map((template) => (
                   <tr key={template.id} className="hover:bg-gray-50 transition-colors">
                     <td className="px-6 py-4">
                       <div className="flex items-center space-x-3">
@@ -432,7 +478,7 @@ export default function ModernTestsPage({ idToken }) {
             </table>
           </div>
 
-          {templates.length === 0 && (
+          {filteredTemplates.length === 0 && (
             <div className="text-center py-12">
               <ClipboardList className="w-12 h-12 text-gray-400 mx-auto mb-4" />
               <p className="text-gray-500">No templates found</p>
@@ -763,7 +809,7 @@ function EditTestModal({ isOpen, onClose, test, onTestUpdated, idToken }) {
   )
 }
 
-// Test Template Modal Component
+// Test Template Modal Component - Updated to restrict subject to Math or English
 function TestTemplateModal({ isOpen, onClose, template, onTemplateSaved, idToken }) {
   const [formData, setFormData] = useState({
     title: "",
@@ -857,14 +903,16 @@ function TestTemplateModal({ isOpen, onClose, template, onTemplateSaved, idToken
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">Subject</label>
-            <input
-              type="text"
+            <select
               required
               value={formData.subject}
               onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
               className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white text-gray-900"
-              placeholder="Enter subject (e.g., Math, Science)"
-            />
+            >
+              <option value="" className="text-gray-900">Select subject</option>
+              <option value="Math" className="text-gray-900">Math</option>
+              <option value="English" className="text-gray-900">English</option>
+            </select>
           </div>
 
           <div>

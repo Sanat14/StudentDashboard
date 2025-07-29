@@ -338,14 +338,16 @@ export default function ModernDashboardHome({ idToken }) {
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Subject</label>
-                  <input
-                    type="text"
+                  <select
                     required
                     value={worksheetFormData.subject}
                     onChange={(e) => setWorksheetFormData({ ...worksheetFormData, subject: e.target.value })}
                     className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white text-gray-900"
-                    placeholder="Enter subject (e.g., Math, Science)"
-                  />
+                  >
+                    <option value="" className="text-gray-900">Select subject</option>
+                    <option value="Math" className="text-gray-900">Math</option>
+                    <option value="English" className="text-gray-900">English</option>
+                  </select>
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Topic</label>
@@ -428,14 +430,16 @@ export default function ModernDashboardHome({ idToken }) {
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Subject</label>
-                  <input
-                    type="text"
+                  <select
                     required
                     value={testFormData.subject}
                     onChange={(e) => setTestFormData({ ...testFormData, subject: e.target.value })}
                     className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white text-gray-900"
-                    placeholder="Enter subject (e.g., Math, Science)"
-                  />
+                  >
+                    <option value="" className="text-gray-900">Select subject</option>
+                    <option value="Math" className="text-gray-900">Math</option>
+                    <option value="English" className="text-gray-900">English</option>
+                  </select>
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Topic</label>

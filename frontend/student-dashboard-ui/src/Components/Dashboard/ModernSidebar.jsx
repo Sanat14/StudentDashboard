@@ -11,7 +11,6 @@ export default function ModernSidebar({ onLogout }) {
     { to: "/tests", icon: ClipboardList, label: "Tests" },
     { to: "/reports", icon: TrendingUp, label: "Reports" },
     { to: "/progress", icon: BarChart3, label: "Progress" },
-    { to: "/templates", icon: BookOpen, label: "Templates" },
   ]
 
   const navItemStyle = ({ isActive }) =>

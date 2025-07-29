@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from "react"
 import { fetchWithAuth } from "../../utils/fetchWithAuth"
-import { BarChart3, Search, Filter, TrendingUp, TrendingDown, Users, X } from "lucide-react"
+import { BarChart3, Search, Filter, TrendingUp, TrendingDown, Users } from "lucide-react"
 
 export default function ModernReportsPage({ idToken }) {
   const [tests, setTests] = useState([])
@@ -10,7 +10,6 @@ export default function ModernReportsPage({ idToken }) {
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState("")
   const [selectedStudent, setSelectedStudent] = useState("All")
-  const [showFilters, setShowFilters] = useState(false)
 
   useEffect(() => {
     loadData()
@@ -96,13 +95,6 @@ export default function ModernReportsPage({ idToken }) {
             <h1 className="text-3xl font-bold text-gray-900">Performance Reports</h1>
             <p className="text-gray-600 mt-1">Track student performance and test results</p>
           </div>
-          <button
-            onClick={() => setShowFilters(!showFilters)}
-            className="flex items-center space-x-2 px-4 py-2 bg-white border border-gray-300 rounded-xl hover:bg-gray-50 transition-colors"
-          >
-            <Filter className="w-4 h-4" />
-            <span>Filters</span>
-          </button>
         </div>
 
         {/* Stats Cards */}
@@ -156,37 +148,34 @@ export default function ModernReportsPage({ idToken }) {
           </div>
         </div>
 
-        {/* Filters */}
-        {showFilters && (
-          <div className="bg-white rounded-xl p-6 shadow-sm border">
-            <div className="flex flex-col sm:flex-row gap-4">
-              <div className="relative flex-1">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
-                <input
-                  type="text"
-                  placeholder="Search tests, students, or subjects..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white text-gray-900"
-                />
-              </div>
-              <div className="relative">
-                <select
-                  value={selectedStudent}
-                  onChange={(e) => setSelectedStudent(e.target.value)}
-                  className="px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent appearance-none bg-white text-gray-900 min-w-48"
-                >
-                  <option value="All">All Students</option>
-                  {students.map((student) => (
-                    <option key={student.id} value={student.fullName}>
-                      {student.fullName}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            </div>
+        {/* Search and Filter */}
+        <div className="flex flex-col sm:flex-row gap-4">
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+            <input
+              type="text"
+              placeholder="Search tests, students, or subjects..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white text-gray-900"
+            />
           </div>
-        )}
+          <div className="relative">
+            <Filter className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+            <select
+              value={selectedStudent}
+              onChange={(e) => setSelectedStudent(e.target.value)}
+              className="pl-10 pr-8 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent appearance-none bg-white text-gray-900 min-w-48"
+            >
+              <option value="All">All Students</option>
+              {students.map((student) => (
+                <option key={student.id} value={student.fullName}>
+                  {student.fullName}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
 
         {/* Test Results Table */}
         <div className="bg-white rounded-xl shadow-sm border overflow-hidden">
