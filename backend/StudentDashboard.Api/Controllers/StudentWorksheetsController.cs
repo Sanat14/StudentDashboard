@@ -110,15 +110,22 @@ namespace StudentDashboard.Api.Controllers
 
             existing.SubmittedDate = dto.SubmittedDate;
             existing.Score = dto.Score;
-            existing.DueDate = dto.DueDate;
+            // Removed due date update as per requirements
 
-            if (dto.SubmittedDate != null)
+            // Changed logic: Mark as completed when score is provided, not when submitted date is set
+            if (dto.Score != null && dto.Score.HasValue)
             {
+                // Set submitted date to current time if not already set
+                if (existing.SubmittedDate == null)
+                {
+                    existing.SubmittedDate = DateTime.UtcNow;
+                }
+
                 var progressEntry = new StudentProgress
                 {
                     StudentId = existing.StudentId,
-                    EventType = "Worksheet Submitted",
-                    Description = $"Submitted worksheet: {existing.Template?.Title ?? "Unknown"}",
+                    EventType = "Worksheet Completed",
+                    Description = $"Completed worksheet: {existing.Template?.Title ?? "Unknown"} with score: {dto.Score}%",
                     Timestamp = DateTime.UtcNow
                 };
 

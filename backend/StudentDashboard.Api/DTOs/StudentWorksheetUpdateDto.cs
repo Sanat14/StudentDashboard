@@ -4,6 +4,5 @@ namespace StudentDashboard.Api.DTOs
     {
         public DateTime? SubmittedDate { get; set; }
         public double? Score { get; set; }
-        public DateTime? DueDate { get; set; }
     }
 }
