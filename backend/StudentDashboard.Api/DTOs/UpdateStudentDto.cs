@@ -4,8 +4,7 @@ namespace StudentDashboard.Api.DTOs
 {
     public class UpdateStudentDto
     {
-        [Required]
-        public string FullName { get; set; } = string.Empty;
+        public string? FullName { get; set; }
 
         public string? ContactNumber { get; set; }
 

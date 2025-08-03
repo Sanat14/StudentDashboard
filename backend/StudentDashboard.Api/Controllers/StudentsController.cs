@@ -141,7 +141,7 @@ namespace StudentDashboard.Api.Controllers
         }
 
         // PUT: /api/students/{id}
-        [HttpPut("{id}")]
+        [HttpPatch("{id}")]
         public async Task<IActionResult> UpdateStudent(int id, UpdateStudentDto dto)
         {
             if (!ModelState.IsValid)
@@ -151,9 +151,15 @@ namespace StudentDashboard.Api.Controllers
             if (student == null)
                 return NotFound($"No student found with ID {id}.");
 
-            student.FullName = dto.FullName;
-            student.ContactNumber = dto.ContactNumber;
-            student.Grade = dto.Grade;
+            // Only update fields that were provided (not null)
+            if (dto.FullName != null)
+                student.FullName = dto.FullName;
+            
+            if (dto.ContactNumber != null)
+                student.ContactNumber = dto.ContactNumber;
+            
+            if (dto.Grade != null)
+                student.Grade = dto.Grade;
 
             _context.Students.Update(student);
             await _context.SaveChangesAsync();
