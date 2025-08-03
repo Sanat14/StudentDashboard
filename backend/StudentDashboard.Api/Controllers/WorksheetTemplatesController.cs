@@ -53,10 +53,18 @@ namespace StudentDashboard.Api.Controllers
             if (template == null)
                 return NotFound();
 
-            template.Title = dto.Title;
-            template.Subject = dto.Subject;
-            template.Topic = dto.Topic;
-            template.Difficulty = dto.Difficulty;
+            // Only update fields that were provided (not null)
+            if (dto.Title != null)
+                template.Title = dto.Title;
+            
+            if (dto.Subject != null)
+                template.Subject = dto.Subject;
+            
+            if (dto.Topic != null)
+                template.Topic = dto.Topic;
+            
+            if (dto.Difficulty != null)
+                template.Difficulty = dto.Difficulty;
 
             await _context.SaveChangesAsync();
 

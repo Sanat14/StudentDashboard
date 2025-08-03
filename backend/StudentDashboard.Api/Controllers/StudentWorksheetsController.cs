@@ -81,7 +81,7 @@ namespace StudentDashboard.Api.Controllers
 
         // POST: /api/studentworksheets
         [HttpPost]
-        public async Task<ActionResult<StudentWorksheet>> AssignWorksheet(StudentWorksheetCreateDto dto)
+        public async Task<ActionResult<StudentWorksheet>> AssignWorksheet([FromBody] StudentWorksheetCreateDto dto)
         {
             var assignment = new StudentWorksheet
             {

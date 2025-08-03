@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using StudentDashboard.Api.Data;
+using StudentDashboard.Api.DTOs;
 using StudentDashboard.Api.Models;
 
 namespace StudentDashboard.Api.Controllers
@@ -46,15 +47,21 @@ namespace StudentDashboard.Api.Controllers
 
         // PUT: /api/testtemplates/{id}
         [HttpPut("{id}")]
-        public async Task<IActionResult> Update(int id, TestTemplate updated)
+        public async Task<IActionResult> Update(int id, [FromBody] UpdateTestTemplateDto dto)
         {
             var template = await _context.TestTemplates.FindAsync(id);
             if (template == null)
                 return NotFound();
 
-            template.Title = updated.Title;
-            template.Subject = updated.Subject;
-            template.Topic = updated.Topic;
+            // Only update fields that were provided (not null)
+            if (dto.Title != null)
+                template.Title = dto.Title;
+            
+            if (dto.Subject != null)
+                template.Subject = dto.Subject;
+            
+            if (dto.Topic != null)
+                template.Topic = dto.Topic;
 
             await _context.SaveChangesAsync();
             return NoContent();
